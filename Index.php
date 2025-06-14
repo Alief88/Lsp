@@ -29,30 +29,66 @@ if (isset($_POST['hapus'])) {
     array_splice($_SESSION['tugas'], $index, 1);
 }
 
+// Edit tugas
+if (isset($_POST['simpan_edit'])) {
+    $index = $_POST['index'];
+    $judulEdit = trim($_POST['judul_edit']);
+    if (!empty($judulEdit)) {
+        $_SESSION['tugas'][$index]['judul'] = $judulEdit;
+    }
+}
+
 // Ambil data tugas untuk ditampilkan
 $tugas = $_SESSION['tugas'];
 
+// Menentukan index yang sedang diedit
+$indexEdit = isset($_POST['edit']) ? $_POST['index'] : -1;
+
 // Fungsi untuk menampilkan daftar tugas
-function tampilkanDaftar($tugas)
+function tampilkanDaftar($tugas, $indexEdit)
 {
     foreach ($tugas as $index => $item) {
         $checked = $item["selesai"] ? "checked" : "";
         $textClass = $item["selesai"] ? "text-decoration-line-through text-muted" : "";
-        echo "<tr>
-                <td class='text-center'>
-                    <form method='post'>
+
+        echo "<tr>";
+
+        // Tombol centang selesai
+        echo "<td class='text-center'>
+                <form method='post'>
+                    <input type='hidden' name='index' value='$index'>
+                    <button type='submit' name='selesai' class='btn btn-sm btn-outline-success'>✓</button>
+                </form>
+            </td>";
+
+        // Kolom Judul Tugas (edit atau tampil)
+        if ($index == $indexEdit) {
+            echo "<td>
+                    <form method='post' class='d-flex'>
                         <input type='hidden' name='index' value='$index'>
-                        <button type='submit' name='selesai' class='btn btn-sm btn-outline-success'>✓</button>
+                        <input type='text' name='judul_edit' class='form-control me-2' value='" . htmlspecialchars($item["judul"]) . "' required>
+                        <button type='submit' name='simpan_edit' class='btn btn-sm btn-success'>Simpan</button>
                     </form>
-                </td>
-                <td class='$textClass'>" . htmlspecialchars($item["judul"]) . "</td>
-                <td class='text-center'>
+                  </td>";
+        } else {
+            echo "<td class='$textClass'>" . htmlspecialchars($item["judul"]) . "</td>";
+        }
+
+        // Kolom aksi (hapus + edit)
+        echo "<td class='text-center'>
+                <div class='d-flex justify-content-center gap-1'>
                     <form method='post'>
                         <input type='hidden' name='index' value='$index'>
                         <button type='submit' name='hapus' class='btn btn-sm btn-danger'>Hapus</button>
                     </form>
-                </td>
-            </tr>";
+                    <form method='post'>
+                        <input type='hidden' name='index' value='$index'>
+                        <button type='submit' name='edit' class='btn btn-sm btn-warning'>Edit</button>
+                    </form>
+                </div>
+              </td>";
+
+        echo "</tr>";
     }
 }
 ?>
@@ -85,11 +121,11 @@ function tampilkanDaftar($tugas)
                 <tr>
                     <th class="text-center" style="width: 80px;">Selesai</th>
                     <th>Judul Tugas</th>
-                    <th class="text-center" style="width: 100px;">Aksi</th>
+                    <th class="text-center" style="width: 150px;">Aksi</th>
                 </tr>
             </thead>
             <tbody>
-                <?php tampilkanDaftar($tugas); ?>
+                <?php tampilkanDaftar($tugas, $indexEdit); ?>
             </tbody>
         </table>
     </div>
